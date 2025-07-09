@@ -60,7 +60,7 @@
 node summarize.js
 ```
 
-脚本将会查找指定数据库中摘要栏位为空的所有页面，为它们生成摘要，并更新页面。
+脚本将会查找指定数据库中摘要栏位为空的所有页面，为它们生成摘要，并更新到页面的Summary属性中去。
 
 -----
 
@@ -81,7 +81,6 @@ node summarize.js
 | :--- | :--- | :--- |
 | `NOTION_KEY` | 你的 Notion 内部集成 Token。 | `secret_...` 或 `ntn_...` |
 | `NOTION_DATABASE_ID`| 你的目标 Notion 数据库 ID。 | `a1b2c3d4e5f6...` |
-| `NOTION_SUMMARY_PROPERTY_NAME`| Notion 数据库中用于存放摘要的属性（列）的准确名称。 | `Summary` 或 `AI摘要` |
 | `OPENROUTER_KEY` | 你从 OpenRouter 获取的 API Key。 | `sk-or-v1-abc...` |
 | `OPENROUTER_MODEL_ID`| 你选择用于生成摘要的 OpenRouter 模型ID。 | `anthropic/claude-3-haiku` |
 | `YOUR_APP_URL` | (推荐) 你的项目URL，用于API请求头。 | `https://github.com/你的用户名/你的仓库` |

@@ -3,12 +3,11 @@
 require("dotenv").config();
 const { Client } = require("@notionhq/client");
 
-const {
-	READ_LOG_NOTION_KEY,
-	READ_LOG_NOTION_DATABASE_ID,
-	READ_LOG_NOTION_TIMESTAMP_PROPERTY_NAME, // 使用新的时间戳属性名
-	READ_LOG_NOTION_CHECKBOX_PROPERTY_NAME,
-} = process.env;
+const { READ_LOG_NOTION_KEY, READ_LOG_NOTION_DATABASE_ID } = process.env;
+
+const NOTION_TIMESTAMP_PROPERTY_NAME = "时间戳";
+const NOTION_CHECKBOX_PROPERTY_NAME = "已同步";
+const NOTION_TIME_PROPERTY_NAME = "时长";
 
 const notion = new Client({ auth: READ_LOG_NOTION_KEY });
 
@@ -29,17 +28,33 @@ async function main() {
 		// --- END: 时间戳计算逻辑结束 ---
 
 		console.log(
-			`🔍 正在查找“${READ_LOG_NOTION_TIMESTAMP_PROPERTY_NAME}”为 ${yesterdayTimestamp} 的项目...`,
+			`🔍 正在查找“${NOTION_TIMESTAMP_PROPERTY_NAME}”为 ${yesterdayTimestamp} 的项目...`,
 		);
 
 		const response = await notion.databases.query({
 			database_id: READ_LOG_NOTION_DATABASE_ID,
 			// --- START: 筛选逻辑已更新为使用 number filter ---
 			filter: {
-				property: READ_LOG_NOTION_TIMESTAMP_PROPERTY_NAME,
-				number: {
-					equals: yesterdayTimestamp,
-				},
+				and: [
+					{
+						property: NOTION_TIMESTAMP_PROPERTY_NAME,
+						number: {
+							equals: yesterdayTimestamp,
+						},
+					},
+					{
+						property: NOTION_CHECKBOX_PROPERTY_NAME,
+						checkbox: {
+							equals: false,
+						},
+					},
+					{
+						property: NOTION_TIME_PROPERTY_NAME,
+						number: {
+							greater_than: 300, // 确保有其他属性存在
+						},
+					},
+				],
 			},
 			// --- END: 筛选逻辑更新结束 ---
 		});
@@ -65,7 +80,7 @@ async function main() {
 			await notion.pages.update({
 				page_id: pageId,
 				properties: {
-					[READ_LOG_NOTION_CHECKBOX_PROPERTY_NAME]: {
+					[NOTION_CHECKBOX_PROPERTY_NAME]: {
 						checkbox: true,
 					},
 				},

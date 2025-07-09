@@ -10,12 +10,13 @@ const { NotionToMarkdown } = require("notion-to-md");
 const {
 	NOTION_KEY,
 	NOTION_DATABASE_ID,
-	NOTION_SUMMARY_PROPERTY_NAME,
 	OPENROUTER_KEY,
 	OPENROUTER_MODEL_ID,
 	YOUR_APP_URL,
 	YOUR_APP_NAME,
 } = process.env;
+
+const NOTION_SUMMARY_PROPERTY_NAME = "Summary";
 
 // 3. 初始化 Notion 客户端 (保持不变)
 const notion = new Client({ auth: NOTION_KEY });
@@ -94,10 +95,20 @@ async function main() {
 		const response = await notion.databases.query({
 			database_id: NOTION_DATABASE_ID,
 			filter: {
-				property: NOTION_SUMMARY_PROPERTY_NAME,
-				rich_text: {
-					is_empty: true,
-				},
+				and: [
+					{
+						property: NOTION_SUMMARY_PROPERTY_NAME,
+						rich_text: {
+							is_empty: true,
+						},
+					},
+					{
+						property: "Status",
+						status: {
+							equals: "New",
+						},
+					},
+				],
 			},
 		});
 		const pages = response.results;
