@@ -1,12 +1,11 @@
-// index.js (使用原生 fetch)
-
 // 1. 引入依赖并加载 .env 配置
 require("dotenv").config();
 const { Client } = require("@notionhq/client");
 const { NotionToMarkdown } = require("notion-to-md");
-// 注意：这里不再需要 require('axios')
+const { createOpenRouter } = require("@openrouter/ai-sdk-provider");
+const { generateText } = require("ai");
 
-// 2. 从 .env 文件中获取配置信息 (保持不变)
+// 2. 从 .env 文件中获取配置信息
 const {
 	NOTION_KEY,
 	NOTION_DATABASE_ID,
@@ -18,12 +17,19 @@ const {
 
 const NOTION_SUMMARY_PROPERTY_NAME = "Summary";
 
-// 3. 初始化 Notion 客户端 (保持不变)
+// 3. 初始化 Notion 客户端
 const notion = new Client({ auth: NOTION_KEY });
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
+// 4. 初始化 OpenRouter AI Provider
+const openrouter = createOpenRouter({
+	apiKey: OPENROUTER_KEY,
+	site: YOUR_APP_URL,
+	title: YOUR_APP_NAME,
+});
+
 /**
- * @description 调用 OpenRouter API 生成摘要 (使用原生 fetch 重构)
+ * @description 使用 AI SDK 和 OpenRouter 生成摘要
  * @param {string} content - 需要被总结的文章内容
  * @returns {Promise<string|null>} - AI 生成的摘要文本，或在失败时返回 null
  */
@@ -35,48 +41,18 @@ async function getAiSummary(content) {
 
 	console.log("-> 正在发送内容给 OpenRouter 进行总结...");
 
-	// 准备 fetch 请求的参数
-	const url = "https://openrouter.ai/api/v1/chat/completions";
-	const headers = {
-		Authorization: `Bearer ${OPENROUTER_KEY}`,
-		"HTTP-Referer": YOUR_APP_URL,
-		"X-Title": YOUR_APP_NAME,
-		"Content-Type": "application/json",
-	};
-	const body = {
-		model: OPENROUTER_MODEL_ID,
-		messages: [
-			{
-				role: "system",
-				content:
-					"你是一个专业的文本摘要助手。请根据用户提供的内容，生成一段简洁、流畅、准确的中文摘要，直接输出摘要本身，不要包含任何额外的前缀或解释，例如不要说'这是摘要：'。",
-			},
-			{ role: "user", content: content },
-		],
-		max_tokens: 256,
-		temperature: 0.5,
-	};
-
 	try {
-		const response = await fetch(url, {
-			method: "POST",
-			headers: headers,
-			body: JSON.stringify(body), // 使用 fetch 时，必须手动将 body 对象转换为 JSON 字符串
+		const { text } = await generateText({
+			model: openrouter(OPENROUTER_MODEL_ID),
+			system:
+				"你是一个专业的文本摘要助手。请根据用户提供的内容，生成一段简洁、流畅、准确的中文摘要，直接输出摘要本身，不要包含任何额外的前缀或解释，例如不要说'这是摘要：'。",
+			prompt: content,
+			maxTokens: 256,
+			temperature: 0.5,
 		});
 
-		// fetch 不会自动因 HTTP 错误（如 4xx, 5xx）而抛出异常，所以需要手动检查
-		if (!response.ok) {
-			// 尝试解析错误详情以提供更清晰的日志
-			const errorDetails = await response.json().catch(() => response.text());
-			throw new Error(
-				`HTTP 错误: ${response.status} ${response.statusText} - ${JSON.stringify(errorDetails)}`,
-			);
-		}
-
-		const data = await response.json();
-		const summary = data.choices[0].message.content.trim();
 		console.log("-> AI 摘要生成成功！");
-		return summary;
+		return text.trim();
 	} catch (error) {
 		console.error("-> 调用 OpenRouter API 失败:", error.message);
 		return null;

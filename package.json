@@ -17,7 +17,7 @@
     "notion-to-md": "^3.1.9"
   },
   "dependencies": {
-    "node-fetch": "^3.3.2",
-    "p-limit": "^6.2.0"
+    "@openrouter/ai-sdk-provider": "^0.7.3",
+    "ai": "^4.3.19"
   }
 }
