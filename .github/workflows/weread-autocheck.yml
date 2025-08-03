@@ -7,7 +7,7 @@ on:
   # 下面的示例表示“每天 UTC 时间的 0 点 0 分执行一次”
   # 您可以使用 https://crontab.guru/ 来生成您想要的时间
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
 
   # 2. 手动触发：允许您在 GitHub Actions 页面手动点击按钮运行，方便测试
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 建议使用一个较新的 LTS 版本
+          node-version: "20" # 建议使用一个较新的 LTS 版本
 
       # 第三步：安装项目依赖
       - name: Install dependencies
@@ -35,7 +35,7 @@ jobs:
       # 第四步：运行你的脚本
       # 关键：通过 `env` 字段，将 GitHub Secrets 安全地注入到脚本的环境变量中
       - name: Run Notion Weread Auto Check Script
-        run: node weread-autocheck.js
+        run: node src/weread-autocheck.js
         env:
           READ_LOG_NOTION_KEY: ${{ secrets.READ_LOG_NOTION_KEY }}
           READ_LOG_NOTION_DATABASE_ID: ${{ secrets.READ_LOG_NOTION_DATABASE_ID }}

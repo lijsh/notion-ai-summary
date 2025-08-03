@@ -2,9 +2,10 @@
   "name": "notion-ai-summary",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/summarize.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test-scraper.js",
+    "scraper-test": "node test/test-scraper.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,9 @@
     "@notionhq/client": "^4.0.0",
     "dotenv": "^17.1.0",
     "notion-to-md": "^3.1.9",
+    "@mozilla/readability": "^0.6.0",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.54.2",
     "@openrouter/ai-sdk-provider": "^0.7.3",
     "ai": "^4.3.19"
   }
