@@ -4,6 +4,7 @@ const { Client } = require("@notionhq/client");
 const { NotionToMarkdown } = require("notion-to-md");
 const { createOpenRouter } = require("@openrouter/ai-sdk-provider");
 const { generateText } = require("ai");
+const { getCleanedWebContent } = require("./web-scraper");
 
 // 2. 从 .env 文件中获取配置信息
 const {
@@ -92,15 +93,23 @@ async function main() {
 
     // 5. 遍历每个页面进行处理
     for (const page of pages) {
-      const pageTitle = page.properties.Name?.title[0]?.plain_text || page.id;
+      let pageTitle = page.properties.Title?.title[0]?.plain_text || page.id;
+      const pageUrl = page.properties.URL?.url;
       console.log(`\n📄 正在处理页面: "${pageTitle}" (ID: ${page.id})`);
 
       try {
         // 6. 获取页面内容并转换为纯文本
         const mdblocks = await n2m.pageToMarkdown(page.id);
         const mdString = n2m.toMarkdownString(mdblocks);
-        const pageContent = mdString.parent;
+        let pageContent = mdString.parent;
 
+        if (!pageContent) {
+          const result = await getCleanedWebContent(pageUrl);
+          pageContent = result.textContent;
+          if (pageTitle === pageUrl) {
+            pageTitle = result.title || pageTitle;
+          }
+        }
         // 7. 调用 AI 生成摘要
         const summary = await getAiSummary(pageContent);
 
