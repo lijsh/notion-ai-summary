@@ -30,7 +30,7 @@ jobs:
 
       # 第三步：安装项目依赖
       - name: Install dependencies
-        run: npm install
+        run: npm install && npx playwright install
 
       # 第四步：运行你的脚本
       # 关键：通过 `env` 字段，将 GitHub Secrets 安全地注入到脚本的环境变量中
